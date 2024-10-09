@@ -19,28 +19,33 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public Usuario createUsuario(@RequestBody Usuario usuario) {
-        return usuarioRepository.save(usuario);
+    public ResponseEntity<?> createUsuario(@RequestBody Usuario usuario) {
+        // Validar que el nombre empiece con una letra mayúscula
+        if (usuario.getNombre() == null || !Character.isUpperCase(usuario.getNombre().charAt(0))) {
+            return ResponseEntity.badRequest().body("El nombre debe comenzar con una letra mayúscula.");
+        }
+
+        // Guardar el nuevo usuario
+        return ResponseEntity.ok(usuarioRepository.save(usuario));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateUsuarioConValidacion(@PathVariable Long id, @RequestBody Usuario usuarioDetails) {
+    public ResponseEntity<?> updateUsuario(@PathVariable Long id, @RequestBody Usuario usuarioDetails) {
         // Buscar el usuario por su ID
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // Validar el nuevo nombre antes de actualizar
-        if (usuarioDetails.getNombre() != null && usuarioDetails.getNombre().length() >= 3) {
-            usuario.setNombre(usuarioDetails.getNombre());
-        } else {
-            return ResponseEntity.badRequest().body("El nombre debe tener al menos 3 caracteres."); // Mensaje de error si no es válido
+        // Validar que el nuevo nombre empiece con una letra mayúscula
+        if (usuarioDetails.getNombre() != null && !Character.isUpperCase(usuarioDetails.getNombre().charAt(0))) {
+            return ResponseEntity.badRequest().body("El nombre debe comenzar con una letra mayúscula.");
         }
 
-        // Validar el nuevo email antes de actualizar
-        if (usuarioDetails.getEmail() != null && usuarioDetails.getEmail().matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$")) {
+        // Actualizar el nombre y el email del usuario
+        if (usuarioDetails.getNombre() != null) {
+            usuario.setNombre(usuarioDetails.getNombre());
+        }
+        if (usuarioDetails.getEmail() != null) {
             usuario.setEmail(usuarioDetails.getEmail());
-        } else {
-            return ResponseEntity.badRequest().body("El formato del email no es válido."); // Mensaje de error si no es válido
         }
 
         // Guardar los cambios en la base de datos
