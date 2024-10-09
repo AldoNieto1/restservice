@@ -13,39 +13,25 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    // Obtener todos los usuarios (GET)
     @GetMapping
     public List<Usuario> getAllUsuarios() {
         return usuarioRepository.findAll();
     }
 
-    // Insertar un nuevo usuario (POST)
     @PostMapping
     public Usuario createUsuario(@RequestBody Usuario usuario) {
         return usuarioRepository.save(usuario);
     }
 
-    // Actualizar un usuario existente (PUT)
-    @PutMapping("/{id}")
-    public ResponseEntity<Usuario> updateUsuario(@PathVariable Long id, @RequestBody Usuario usuarioDetails) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        usuario.setNombre(usuarioDetails.getNombre());
-        usuario.setEmail(usuarioDetails.getEmail());
-
-        final Usuario updatedUsuario = usuarioRepository.save(usuario);
-        return ResponseEntity.ok(updatedUsuario);
-    }
-
-    // Eliminar un usuario existente (DELETE)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUsuario(@PathVariable Long id) {
+    public ResponseEntity<Usuario> deleteUsuarioYRetornarDetalles(@PathVariable Long id) {
+        // Buscar el usuario por su ID
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        usuarioRepository.delete(usuario); // Eliminar el usuario
-        return ResponseEntity.noContent().build(); // Retorna 204 No Content si se elimina exitosamente
+        // Eliminar el usuario de la base de datos
+        usuarioRepository.delete(usuario);
+        // Retornar los detalles del usuario eliminado
+        return ResponseEntity.ok(usuario);
     }
 }
-
